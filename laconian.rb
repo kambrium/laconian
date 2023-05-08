@@ -44,7 +44,14 @@ loop do
       else
         write_status(client, 2, "text/gemini")
         client.puts("=>..\n")
-        Dir.each_child(file_path) {|x| puts "Got #{x}" }
+        Dir.each_child(file_path) do |child|
+          puts child.class
+          if File.directory?("#{file_path}/#{child}") # Must be improved.
+            client.puts("#{child}/\n")
+          else
+            client.puts("#{child}\n")
+          end
+        end
       end
     end
 
