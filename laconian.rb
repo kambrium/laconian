@@ -9,6 +9,10 @@ root = "."
 #   string.gsub(/\A[#{chars}]+|[#{chars}]+\z/, "")
 # end
 
+def write_line(client, text)
+  client.puts("#{text}\n")
+end
+
 def write_status(client, code, meta)
   client.puts("#{code} #{meta}\r\n")
 end
@@ -43,13 +47,12 @@ loop do
         write_file(client, "#{file_path}/index.gmi")
       else
         write_status(client, 2, "text/gemini")
-        client.puts("=>..\n")
+        write_line(client, "=>..")
         Dir.each_child(file_path) do |child|
-          puts child.class
           if File.directory?("#{file_path}/#{child}") # Must be improved.
-            client.puts("#{child}/\n")
+            write_line(client, "#{child}/")
           else
-            client.puts("#{child}\n")
+            write_line(client, "#{child}")
           end
         end
       end
