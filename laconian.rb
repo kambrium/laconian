@@ -16,7 +16,7 @@ def write_file(client, file_path)
   file_stream.close
 end
 
-server = TCPServer.new 'localhost', 1965
+server = TCPServer.new 'localhost', 3000
 
 loop do
   Thread.start(server.accept) do |client|
