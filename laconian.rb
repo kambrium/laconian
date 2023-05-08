@@ -9,8 +9,12 @@ root = "."
 #   string.gsub(/\A[#{chars}]+|[#{chars}]+\z/, "")
 # end
 
+def write_status(client, code, meta)
+  client.puts("#{code} #{meta}\r\n")
+end
+
 def write_file(client, file_path)
-  client.puts("2 text/gemini\r\n")
+  write_status(client, 2, "text/gemini")
   file_stream = File.new(file_path, 'rb')
   IO::copy_stream(file_stream, client)
   file_stream.close
@@ -34,11 +38,11 @@ loop do
       write_file(client, file_path)
     elsif File.directory?(file_path)
       if !path.end_with?("/")
-        client.puts("3 #{path}/\r\n")
+        write_status(client, 3, "#{path}/")
       elsif File.file?("#{file_path}/index.gmi")
         write_file(client, "#{file_path}/index.gmi")
       else
-        client.puts("2 text/gemini\r\n")
+        write_status(client, 2, "text/gemini")
         client.puts("=>..\n")
         Dir.each_child(file_path) {|x| puts "Got #{x}" }
       end
