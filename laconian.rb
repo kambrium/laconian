@@ -2,32 +2,16 @@ require 'cgi'
 require 'date'
 require 'socket'
 
-root = "."
+class SpartanRequestHandler
+  # Class initialization to be reviewed
+  attr_reader :client, :root
 
-# def strip_char(string, chars)
-#   chars = Regexp.escape(chars)
-#   string.gsub(/\A[#{chars}]+|[#{chars}]+\z/, "")
-# end
+  def initialize(client, root)
+    @client = client
+    @root = root
+  end
 
-def write_line(client, text)
-  client.puts("#{text}\n")
-end
-
-def write_status(client, code, meta)
-  client.puts("#{code} #{meta}\r\n")
-end
-
-def write_file(client, file_path)
-  write_status(client, 2, "text/gemini")
-  file_stream = File.new(file_path, 'rb')
-  IO::copy_stream(file_stream, client)
-  file_stream.close
-end
-
-server = TCPServer.new 'localhost', 3000
-
-loop do
-  Thread.start(server.accept) do |client|
+  def handle
     request = client.gets
     puts "#{DateTime.now} #{request}"
 
@@ -39,25 +23,56 @@ loop do
     file_path = "#{root}/#{cpath}"
 
     if File.file?(file_path)
-      write_file(client, file_path)
+      write_file(file_path)
     elsif File.directory?(file_path)
       if !path.end_with?("/")
-        write_status(client, 3, "#{path}/")
+        write_status(3, "#{path}/")
       elsif File.file?("#{file_path}/index.gmi")
-        write_file(client, "#{file_path}/index.gmi")
+        write_file("#{file_path}/index.gmi")
       else
-        write_status(client, 2, "text/gemini")
-        write_line(client, "=>..")
+        write_status(2, "text/gemini")
+        write_line("=>..")
         Dir.each_child(file_path) do |child|
           if File.directory?("#{file_path}/#{child}") # Must be improved.
-            write_line(client, "#{child}/")
+            write_line("#{child}/")
           else
-            write_line(client, "#{child}")
+            write_line("#{child}")
           end
         end
       end
     end
 
     client.close
+  end
+
+  # def strip_char(string, chars)
+  #   chars = Regexp.escape(chars)
+  #   string.gsub(/\A[#{chars}]+|[#{chars}]+\z/, "")
+  # end
+
+  def write_line(text)
+    client.puts("#{text}\n")
+  end
+
+  def write_status(code, meta)
+    client.puts("#{code} #{meta}\r\n")
+  end
+
+  def write_file(file_path)
+    write_status(2, "text/gemini")
+    file_stream = File.new(file_path, 'rb')
+    IO::copy_stream(file_stream, client)
+    file_stream.close
+  end
+end
+
+root = "."
+
+server = TCPServer.new 'localhost', 3000
+
+loop do
+  Thread.start(server.accept) do |client|
+    srh = SpartanRequestHandler.new(client, root)
+    srh.handle
   end
 end
