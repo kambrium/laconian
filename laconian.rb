@@ -3,7 +3,6 @@ require 'date'
 require 'socket'
 
 class SpartanRequestHandler
-  # Class initialization to be reviewed
   attr_reader :client
 
   def initialize(client)
@@ -19,20 +18,20 @@ class SpartanRequestHandler
     path = CGI.unescape(path)
     # Yes, this is bad! Possible substitution see above.
     cpath = path.chomp("/").reverse.chomp("/").reverse
-    file_path = "#{root}/#{cpath}"
+    file_path = File.join(root, cpath)
 
     if File.file?(file_path)
       write_file(file_path)
     elsif File.directory?(file_path)
       if !path.end_with?("/")
         write_status(3, "#{path}/")
-      elsif File.file?("#{file_path}/index.gmi")
-        write_file("#{file_path}/index.gmi")
+      elsif File.file?(File.join(file_path, "index.gmi"))
+        write_file(File.join(file_path, "index.gmi"))
       else
         write_status(2, "text/gemini")
         write_line("=>..")
         Dir.each_child(file_path) do |child|
-          if File.directory?("#{file_path}/#{child}") # Must be improved.
+          if File.directory?(File.join(file_path, child)) # Can be improved?
             write_line("#{child}/")
           else
             write_line("#{child}")
