@@ -4,14 +4,13 @@ require 'socket'
 
 class SpartanRequestHandler
   # Class initialization to be reviewed
-  attr_reader :client, :root
+  attr_reader :client
 
-  def initialize(client, root)
+  def initialize(client)
     @client = client
-    @root = root
   end
 
-  def handle
+  def handle(root)
     request = client.gets
     puts "#{DateTime.now} #{request}"
 
@@ -72,7 +71,7 @@ server = TCPServer.new 'localhost', 3000
 
 loop do
   Thread.start(server.accept) do |client|
-    srh = SpartanRequestHandler.new(client, root)
-    srh.handle
+    srh = SpartanRequestHandler.new(client)
+    srh.handle(root)
   end
 end
