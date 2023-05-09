@@ -12,13 +12,17 @@ class SpartanRequestHandler
   def handle(root)
     request = client.gets
     puts "#{DateTime.now} #{request}"
-
     hostname, path, content_length = request.split(" ")
 
     path = CGI.unescape(path)
-    # Yes, this is bad! Possible substitution see above.
-    cpath = path.chomp("/").reverse.chomp("/").reverse
-    file_path = File.join(root, cpath)
+    # From https://practicingruby.com/articles/implementing-an-http-file-server
+    clean =[]
+    parts = path.split("/")
+    parts.each do |part|
+      next if part.empty? || part == "."
+      part == ".." ? clean.pop : clean << part
+    end
+    file_path = File.join(root, *clean)
 
     if File.file?(file_path)
       write_file(file_path)
@@ -42,11 +46,6 @@ class SpartanRequestHandler
 
     client.close
   end
-
-  # def strip_char(string, chars)
-  #   chars = Regexp.escape(chars)
-  #   string.gsub(/\A[#{chars}]+|[#{chars}]+\z/, "")
-  # end
 
   def write_line(text)
     client.puts("#{text}\n")
