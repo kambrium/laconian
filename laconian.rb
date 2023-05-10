@@ -10,41 +10,54 @@ class SpartanRequestHandler
   end
 
   def handle(root)
-    request = client.gets
-    puts "#{DateTime.now} #{request}"
-    hostname, path, content_length = request.split(" ")
+    begin
+      request = client.gets
+      puts "#{DateTime.now} #{request}"
+      hostname, path, content_length = request.split(" ")
 
-    path = CGI.unescape(path)
-    # From https://practicingruby.com/articles/implementing-an-http-file-server
-    clean =[]
-    parts = path.split("/")
-    parts.each do |part|
-      next if part.empty? || part == "."
-      part == ".." ? clean.pop : clean << part
-    end
-    file_path = File.join(root, *clean)
+      path = CGI.unescape(path)
 
-    if File.file?(file_path)
-      write_file(file_path)
-    elsif File.directory?(file_path)
-      if !path.end_with?("/")
-        write_status(3, "#{path}/")
-      elsif File.file?(File.join(file_path, "index.gmi"))
-        write_file(File.join(file_path, "index.gmi"))
-      else
-        write_status(2, "text/gemini")
-        write_line("=>..")
-        Dir.each_child(file_path) do |child|
-          if File.directory?(File.join(file_path, child)) # Can be improved?
-            write_line("#{child}/")
-          else
-            write_line("#{child}")
+      # Guard against breaking out of the directory. Source (accessed 23-05-10):
+      # https://practicingruby.com/articles/implementing-an-http-file-server
+      clean = []
+      parts = path.split("/")
+      parts.each do |part|
+        next if part.empty? || part == "."
+        part == ".." ? clean.pop : clean << part
+      end
+
+      file_path = File.join(root, *clean)
+
+      if File.file?(file_path)
+        write_file(file_path)
+      elsif File.directory?(file_path)
+        if !path.end_with?("/")
+          write_status(3, "#{path}/")
+        elsif File.file?(File.join(file_path, "index.gmi"))
+          write_file(File.join(file_path, "index.gmi"))
+        else
+          write_status(2, "text/gemini")
+          write_line("=>..")
+          Dir.each_child(file_path) do |child|
+            if File.directory?(File.join(file_path, child)) # Can be improved?
+              write_line("#{child}/")
+            else
+              write_line("#{child}")
+            end
           end
         end
+      else
+        raise IOError.new("Not found")
       end
-    end
 
-    client.close
+      client.close
+      
+    rescue IOError => e
+      write_status(4, e)
+    rescue
+      write_status(5, "An unexpected error has occurred")
+      raise
+    end
   end
 
   def write_line(text)
