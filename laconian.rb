@@ -1,5 +1,6 @@
 require 'cgi'
 require 'date'
+require 'optparse'
 require 'socket'
 
 class SpartanRequestHandler
@@ -9,7 +10,7 @@ class SpartanRequestHandler
     @client = client
   end
 
-  def handle(root)
+  def handle(directory)
     request = client.gets
     puts "#{DateTime.now} #{request}"
     hostname, path, content_length = request.split(" ")
@@ -28,7 +29,7 @@ class SpartanRequestHandler
       part == ".." ? clean.pop : clean << part
     end
 
-    file_path = File.join(root, *clean)
+    file_path = File.join(directory, *clean)
 
     if File.file?(file_path)
       write_file(file_path)
@@ -75,14 +76,19 @@ class SpartanRequestHandler
   end
 end
 
-root = "."
+options = { directory: ".", host: "localhost", port: "3000" }
+OptionParser.new do |opt|
+  opt.on("-d", "--directory DIRECTORY") { |o| options[:directory] = o }
+  opt.on("-s", "--host HOST") { |o| options[:host] = o }
+  opt.on("-p", "--port PORT") { |o| options[:port] = o }
+end.parse!
 
-server = TCPServer.new 'localhost', 3000
+server = TCPServer.new options[:host], options[:port]
 
 loop do
   Thread.start(server.accept) do |client|
     srh = SpartanRequestHandler.new(client)
-    srh.handle(root)
+    srh.handle(options[:directory])
     client.close
   end
 end
