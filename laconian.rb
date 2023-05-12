@@ -11,7 +11,7 @@ class SpartanRequestHandler
   end
 
   def handle(directory)
-    request = client.gets
+    request = @client.gets
     puts "#{DateTime.now} #{request}"
     hostname, path, content_length = request.split(" ")
     if !path
@@ -61,17 +61,17 @@ class SpartanRequestHandler
   end
 
   def write_line(text)
-    client.puts("#{text}\n")
+    @client.puts("#{text}\n")
   end
 
   def write_status(code, meta)
-    client.puts("#{code} #{meta}\r\n")
+    @client.puts("#{code} #{meta}\r\n")
   end
 
   def write_file(file_path)
     write_status(2, "text/gemini")
     file_stream = File.new(file_path, 'rb')
-    IO::copy_stream(file_stream, client)
+    IO::copy_stream(file_stream, @client)
     file_stream.close
   end
 end
