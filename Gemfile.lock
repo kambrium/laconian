@@ -1,0 +1,15 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    mime-types (3.4.1)
+      mime-types-data (~> 3.2015)
+    mime-types-data (3.2023.0218.1)
+
+PLATFORMS
+  x64-mingw-ucrt
+
+DEPENDENCIES
+  mime-types
+
+BUNDLED WITH
+   2.4.10

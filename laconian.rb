@@ -1,5 +1,6 @@
 require 'cgi'
 require 'date'
+require 'mime/types'
 require 'optparse'
 require 'socket'
 
@@ -69,7 +70,8 @@ class SpartanRequestHandler
   end
 
   def write_file(file_path)
-    write_status(2, "text/gemini")
+    mime_type = MIME::Types.type_for(File.extname(file_path)).first # Can be improved?
+    write_status(2, mime_type)
     file_stream = File.new(file_path, 'rb')
     IO::copy_stream(file_stream, @client)
     file_stream.close
@@ -84,6 +86,9 @@ OptionParser.new do |opt|
 end.parse!
 
 server = TCPServer.new options[:host], options[:port]
+
+text_gemini = MIME::Type.new(["text/gemini", "gmi"])
+MIME::Types.add(text_gemini)
 
 loop do
   Thread.start(server.accept) do |client|
