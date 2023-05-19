@@ -1,3 +1,4 @@
+require 'bundler/setup'
 require 'cgi'
 require 'date'
 require 'mime/types'
