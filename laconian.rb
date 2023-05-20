@@ -21,7 +21,7 @@ class SpartanRequestHandler
     request = @client.gets
     puts "#{DateTime.now} #{request}"
     hostname, path, content_length = request.split(" ")
-    if !path
+    unless path
       raise IOError.new("Not found")
     end
 
