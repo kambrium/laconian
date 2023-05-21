@@ -5,12 +5,16 @@
 #
 # Copyright (c) Martin Muehlbauer
 
+
 require 'bundler/setup'
+
 require 'cgi'
 require 'date'
-require 'mime/types'
 require 'optparse'
 require 'socket'
+
+require 'mime/types'
+
 
 class SpartanRequestHandler
   attr_reader :client
