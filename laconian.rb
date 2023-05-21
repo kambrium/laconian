@@ -24,8 +24,9 @@ class SpartanRequestHandler
   end
 
   def handle(directory)
-    request = @client.gets
+    request = @client.gets # Request is ASCII-8BIT
     puts "#{DateTime.now} #{request}"
+    # Actually we don't need hostname and content_length later...
     hostname, path, content_length = request.split(" ")
     unless path
       raise IOError.new("Not found")
@@ -70,7 +71,6 @@ class SpartanRequestHandler
     write_status(4, e)
   rescue
     write_status(5, "An unexpected error has occurred")
-    raise
   end
 
   def write_line(text)
@@ -78,7 +78,7 @@ class SpartanRequestHandler
   end
 
   def write_status(code, meta)
-    @client.puts("#{code} #{meta}\r\n")
+    @client.puts("#{code} #{meta}\r\n".encode("ASCII-8BIT"))
   end
 
   def write_file(file_path)
@@ -89,6 +89,7 @@ class SpartanRequestHandler
     file_stream.close
   end
 end
+
 
 options = { directory: ".", host: "localhost", port: "3000" }
 OptionParser.new do |opt|
