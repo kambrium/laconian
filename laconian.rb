@@ -2,6 +2,8 @@
 #
 # Laconian is a Ruby port of the Spartan reference server on 
 # https://github.com/michael-lazar/spartan/blob/main/public/spartan_server.py.
+#
+# Copyright (c) Martin Muehlbauer
 
 require 'bundler/setup'
 require 'cgi'
