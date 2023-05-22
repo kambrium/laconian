@@ -28,9 +28,7 @@ class SpartanRequestHandler
     puts "#{DateTime.now} #{request}"
     # Actually we don't need hostname and content_length later...
     hostname, path, content_length = request.split(" ")
-    unless path
-      raise IOError.new("Not found")
-    end
+    raise IOError.new("Not found") unless path
 
     path = CGI.unescape(path)
 
