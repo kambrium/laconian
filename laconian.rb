@@ -55,9 +55,9 @@ class SpartanRequestHandler
         write_line('=>..')
         Dir.each_child(file_path) do |child|
           if File.directory?(File.join(file_path, child)) # Can be improved?
-            write_line("#{child}/")
+            write_line("=>#{child}/")
           else
-            write_line("#{child}")
+            write_line("=>#{child}")
           end
         end
       end
