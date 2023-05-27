@@ -27,18 +27,18 @@ class SpartanRequestHandler
     request = @client.gets # Request is ASCII-8BIT
     puts "#{DateTime.now} #{request}"
     # Actually we don't need hostname and content_length later...
-    hostname, path, content_length = request.split(" ")
-    raise IOError.new("Not found") unless path
+    hostname, path, content_length = request.split(' ')
+    raise IOError.new('Not found') unless path
 
     path = CGI.unescape(path)
 
     # Guard against breaking out of the directory. Source (accessed 23-05-10):
     # https://practicingruby.com/articles/implementing-an-http-file-server
     clean = []
-    parts = path.split("/")
+    parts = path.split('/')
     parts.each do |part|
-      next if part.empty? || part == "."
-      part == ".." ? clean.pop : clean << part
+      next if part.empty? || part == '.'
+      part == '..' ? clean.pop : clean << part
     end
 
     file_path = File.join(directory, *clean)
@@ -46,13 +46,13 @@ class SpartanRequestHandler
     if File.file?(file_path)
       write_file(file_path)
     elsif File.directory?(file_path)
-      if !path.end_with?("/")
+      if !path.end_with?('/')
         write_status(3, "#{path}/")
-      elsif File.file?(File.join(file_path, "index.gmi"))
-        write_file(File.join(file_path, "index.gmi"))
+      elsif File.file?(File.join(file_path, 'index.gmi'))
+        write_file(File.join(file_path, 'index.gmi'))
       else
-        write_status(2, "text/gemini")
-        write_line("=>..")
+        write_status(2, 'text/gemini')
+        write_line('=>..')
         Dir.each_child(file_path) do |child|
           if File.directory?(File.join(file_path, child)) # Can be improved?
             write_line("#{child}/")
@@ -62,13 +62,13 @@ class SpartanRequestHandler
         end
       end
     else
-      raise IOError.new("Not found")
+      raise IOError.new('Not found')
     end
 
   rescue IOError => e
     write_status(4, e)
   rescue
-    write_status(5, "An unexpected error has occurred")
+    write_status(5, 'An unexpected error has occurred')
   end
 
   def write_line(text)
@@ -76,7 +76,7 @@ class SpartanRequestHandler
   end
 
   def write_status(code, meta)
-    @client.puts("#{code} #{meta}\r\n".encode("ASCII-8BIT"))
+    @client.puts("#{code} #{meta}\r\n".encode('ASCII-8BIT'))
   end
 
   def write_file(file_path)
@@ -89,16 +89,16 @@ class SpartanRequestHandler
 end
 
 
-options = { directory: ".", host: "localhost", port: "3000" }
+options = { directory: '.', host: 'localhost', port: '3000' }
 OptionParser.new do |opt|
-  opt.on("-d", "--directory DIRECTORY") { |o| options[:directory] = o }
-  opt.on("-s", "--host HOST") { |o| options[:host] = o }
-  opt.on("-p", "--port PORT") { |o| options[:port] = o }
+  opt.on('-d', '--directory DIRECTORY') { |o| options[:directory] = o }
+  opt.on('-s', '--host HOST') { |o| options[:host] = o }
+  opt.on('-p', '--port PORT') { |o| options[:port] = o }
 end.parse!
 
 server = TCPServer.new options[:host], options[:port]
 
-text_gemini = MIME::Type.new(["text/gemini", "gmi"])
+text_gemini = MIME::Type.new(['text/gemini', 'gmi'])
 MIME::Types.add(text_gemini)
 
 loop do
